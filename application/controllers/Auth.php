@@ -187,6 +187,12 @@ class Auth extends Base_Controller {
 					'msg' => "Passwords don't match."
 				];
 			}
+			elseif (strlen($post['new-password']) < PSW_MIN_LENGTH) {
+				$response = [
+					'status' => "failed",
+					'msg' => "Password has to be at least ".PSW_MIN_LENGTH." characters long."
+				];
+			}
 			else {
 				//validate old password
 				if ($this->$usermodel->authenticate($_SESSION['user_email'],$post['password'])) {

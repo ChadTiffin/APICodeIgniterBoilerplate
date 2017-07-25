@@ -316,6 +316,22 @@ class Budget extends Base_Controller {
 						$this->db->insert("budgets",$insert_entry);
 					}
 
+					//get the last set of income sources
+					$last_incomes = $this->db->get_where("income_sources",["bud_year" => $prev_year,'bud_month' => $prev_month])->result();
+
+					foreach ($last_incomes as $entry) {
+						$insert_entry = [
+							'amount' => $entry->amount,
+							'priority' => $entry->priority,
+							'bud_month' => $month,
+							'bud_year' => $year,
+							'updated_at' => date("Y-m-d H:i:s"),
+							'deleted' => $entry->deleted
+						];
+
+						$this->db->insert("income_sources",$insert_entry);
+					}
+
 					$return = [
 						'status' => 'success',
 						'msg' => "Budget copied successfully"

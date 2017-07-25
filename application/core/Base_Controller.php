@@ -48,9 +48,15 @@ class Base_Controller extends CI_Controller {
 		unset($_POST['key']);
 	}
 
-	public function find($id)
+	public function find($id,$field = 'id')
 	{
-		echo json_encode($this->db->get_where($this->table,["id" => $id])->row());
+		$result = $this->db->get_where($this->table,[$field => $id])->row_array();
+
+		foreach ($this->api_excluded_fields as $field) {
+			unset($result[$field]);
+		}
+
+		echo json_encode($result);
 	}
 
 	public function save()
