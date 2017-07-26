@@ -38,4 +38,21 @@ class BankAccount extends Base_Controller {
 		]);
 	}
 
+	public function save_order() {
+		$list = json_decode($this->input->post("list"));
+
+		$index = 0;
+		foreach ($list as $item) {
+			$this->db->where("id",$item)
+				->set("priority",$index)
+				->update($this->table);
+
+			$index++;
+		}
+
+		echo json_encode([
+			"status" => "success"
+		]);
+	}
+
 }
