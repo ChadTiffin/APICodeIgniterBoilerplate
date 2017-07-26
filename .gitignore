@@ -10,6 +10,7 @@ application/logs/*
 
 application/config/config.php
 application/config/database.php
+application/config/sandbox/*
 
 application/sftp-config.json
 

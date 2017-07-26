@@ -43,9 +43,9 @@ class Base_Controller extends CI_Controller {
 		//$user = $this->db->get_where("users",["api_key" => $_REQUEST['key']])->row();
 		//$_SESSION['user_id'] = $user->id;
 
-		unset($_REQUEST['key']);
+		/*unset($_REQUEST['key']);
 		unset($_GET['key']);
-		unset($_POST['key']);
+		unset($_POST['key']);*/
 	}
 
 	public function find($id,$field = 'id')
@@ -61,6 +61,11 @@ class Base_Controller extends CI_Controller {
 
 	public function save()
 	{
+
+		unset($_REQUEST['key']);
+		unset($_GET['key']);
+		unset($_POST['key']);
+
 		$this->load->library("form_validation");
 		$this->form_validation->set_error_delimiters('', '');
 
@@ -120,6 +125,10 @@ class Base_Controller extends CI_Controller {
 		$this->form_validation->set_error_delimiters('', '');
 
 		$validation_passes = true;
+
+		unset($_REQUEST['key']);
+		unset($_GET['key']);
+		unset($_POST['key']);
 
 		$post = $this->input->post();
 

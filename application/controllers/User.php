@@ -22,10 +22,39 @@ class User extends Base_Controller {
 	{
 		parent::__construct();
 	
+		$this->gatekeep(["Admin","Root","User"]);
+	}
+
+	public function find($id,$field='id') {
 		$this->gatekeep(["Admin","Root"]);
+
+		parent::find($id,$field);
+	}
+
+	public function self($api_key) {
+		$result = $this->db->get_where($this->table,['api_key' => $api_key])->row_array();
+
+		foreach ($this->api_excluded_fields as $field) {
+			unset($result[$field]);
+		}
+
+		echo json_encode($result);
+	}
+
+	public function save() {
+		$this->gatekeep(["Admin","Root"]);
+
+		parent::save();
+	}
+
+	public function get() {
+		$this->gatekeep(["Admin","Root"]);
+
+		parent::get();
 	}
 
 	public function new() {
+
 		$this->load->library("form_validation");
 		$this->form_validation->set_error_delimiters('', '');
 

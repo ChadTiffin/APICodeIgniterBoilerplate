@@ -44,6 +44,7 @@ class Auth extends Base_Controller {
 
 				$response = [
 					'status' => "success",
+					'userType' => $user_details->user_level,
 					"apiKey" => $user_details->api_key,
 					'msg' => "Login successful."
 				];
