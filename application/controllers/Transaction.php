@@ -30,7 +30,15 @@ class Transaction extends Base_Controller {
 		$this->gatekeep(["User","Admin","Root"]);
 	}
 
-	public function get($date_from = false, $date_to = false, $group_id = false, $category_id = false, $amount_from = false, $amount_to = false, $description_keyword = false, $user_id = false) {
+	public function get(
+		$date_from = false, 
+		$date_to = false, 
+		$group_id = false, 
+		$category_id = false, 
+		$amount_from = false, 
+		$amount_to = false, 
+		$description_keyword = false, 
+		$user_id = false) {
 
 		$this->db
 			->select('
@@ -61,29 +69,29 @@ class Transaction extends Base_Controller {
 				->where("tran_date <= ",date("Y-12-31"));
 		}
 		else {
-			if ($date_from !== 'null')
+			if ($date_from !== 'null' && $date_from != "undefined")
 				$this->db->where("tran_date >=",$date_from);
 
-			if ($date_to !== 'null')
+			if ($date_to !== 'null' && $date_to != "undefined")
 				$this->db->where("tran_date <=",$date_to);
 		}
 
-		if ($group_id !== 'null')
+		if ($group_id !== 'null' && $group_id != "undefined")
 			$this->db->where("group_id",$group_id);
 
-		if ($category_id !== 'null')
+		if ($category_id !== 'null' && $category_id != "undefined")
 			$this->db->where("cat_id",$category_id);
 
-		if ($amount_from !== 'null')
+		if ($amount_from !== 'null' && $amount_from != "undefined")
 			$this->db->where("amount >=", $amount_from);
 
-		if ($amount_to !== 'null')
+		if ($amount_to !== 'null' && $amount_to != "undefined")
 			$this->db->where("amount <=", $amount_to);
 
-		if ($description_keyword !== 'null')
+		if ($description_keyword !== 'null' && $description_keyword != "undefined")
 			$this->db->like('transactions.description', $description_keyword);
 
-		if ($user_id !== 'null')
+		if ($user_id !== 'null' && $user_id != "undefined")
 			$this->db->where("user_id",$user_id);
 
 		$transactions = $this->db
