@@ -30,7 +30,7 @@ class Transaction extends Base_Controller {
 		$this->gatekeep(["User","Admin","Root"]);
 	}
 
-	public function get(
+	public function filter(
 		$date_from = false, 
 		$date_to = false, 
 		$group_id = false, 
