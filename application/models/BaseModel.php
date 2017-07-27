@@ -6,15 +6,15 @@ class BaseModel extends CI_Model {
 	public $soft_delete = false;
 	public $order_by_priority = false;
 
-	public function get($include_deleted = false)
+	public function get($include_deleted = false, $filters = [])
 	{
 		if ($this->order_by_priority)
 			$this->db->order_by("priority","ASC");
 
-		if ($include_deleted)
-			return $this->db->get($this->table)->result();	
-		else
-			return $this->db->get_where($this->table,["deleted" => 0])->result_array();
+		if (!$include_deleted)
+			$filters['deleted'] = 0;
+
+		return $this->db->get_where($this->table,$filters)->result_array();
 	}
 
 	public function delete($id) {

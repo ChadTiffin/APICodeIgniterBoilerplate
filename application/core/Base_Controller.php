@@ -185,12 +185,22 @@ class Base_Controller extends CI_Controller {
 
 	public function get()
 	{
-		if ($this->model != "") {
-			$model = $this->model;
-			$records = $this->$model->get();
+
+		$filters = json_decode($this->input->get("filters"),true);
+
+		if ($filters) {
+			$records = $this->db->get_where($this->table,$filters)->result_array();
 		}
-		else
-			$records = $this->db->get($this->table)->result_array();
+		else {
+			if ($this->model != "") {
+				$model = $this->model;
+				$records = $this->$model->get();
+			}
+			else {
+				$filters = [];
+				$records = $this->db->get_where($this->table,$filters)->result_array();
+			}
+		}
 
 		if (!empty($this->api_excluded_fields)) {
 
