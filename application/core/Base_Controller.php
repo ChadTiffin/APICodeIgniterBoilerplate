@@ -186,10 +186,34 @@ class Base_Controller extends CI_Controller {
 	public function get()
 	{
 
-		$filters = json_decode($this->input->get("filters"),true);
+		/*
+		$filters should look like this:
+		$filters = [
+			[field, value],
+			[field, value]
+		]
+		*/
 
-		if ($filters) {
-			$records = $this->db->get_where($this->table,$filters)->result_array();
+		if ($this->input->get("filters")) {
+			$filters = json_decode($this->input->get("filters"),true);
+
+			if ($this->model != "") {
+				$model = $this->model;
+				$records = $this->$model->get(false, $filters);
+			}
+			else {
+				
+				foreach ($filters as $filter) {
+					if (isset($filter[2]) && strtolower($filter[2]) == 'like')
+						$this->db->like($filter[0],$filter[1]);
+					else
+						$this->db->where($filter[0],$filter[1]);
+				}
+
+				$records = $this->db
+					->get($this->table)
+					->result_array();
+			}
 		}
 		else {
 			if ($this->model != "") {
@@ -197,8 +221,7 @@ class Base_Controller extends CI_Controller {
 				$records = $this->$model->get();
 			}
 			else {
-				$filters = [];
-				$records = $this->db->get_where($this->table,$filters)->result_array();
+				$records = $this->db->get($this->table)->result_array();
 			}
 		}
 

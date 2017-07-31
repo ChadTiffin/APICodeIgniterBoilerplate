@@ -9,7 +9,7 @@ class Transaction extends Base_Controller {
 		[
 			"field" => 'tran_date',
 			"label" => "Transaction Date",
-			"rules" => "required|min_length[10]"
+			"rules" => "required|min_length[8]"
 		],
 		[
 			"field" => 'cat_id',
@@ -151,7 +151,7 @@ class Transaction extends Base_Controller {
 			[
 				'field' => 'tran_date',
 				'label' => "Date",
-				"rules" => "required|min_length[10]"
+				"rules" => "required|min_length[8]"
 			]
 		]);
 
