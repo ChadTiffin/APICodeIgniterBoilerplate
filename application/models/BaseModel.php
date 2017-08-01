@@ -12,6 +12,11 @@ class BaseModel extends CI_Model {
 		'joins' => [
 			['table' => {table}, 'key' => {key}]
 		]
+
+		$filters expects = [
+			['col','value'],
+			['col operator','value']
+		]
 	] */
 	public $relations = [];
 

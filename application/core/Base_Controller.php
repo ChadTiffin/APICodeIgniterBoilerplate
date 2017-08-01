@@ -28,6 +28,7 @@ class Base_Controller extends CI_Controller {
 		if ( "OPTIONS" === $_SERVER['REQUEST_METHOD'] ) {
 			die();
 		}
+
 	}
 
 	protected function gatekeep($user_types) {

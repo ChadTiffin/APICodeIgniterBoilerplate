@@ -235,8 +235,27 @@ class Budget extends Base_Controller {
 				->get_where("income_sources",["bud_year" => $year, 'bud_month' => $month,'deleted'=>0])
 				->result();
 
+			if ($month == 1) {
+				$last_month = 12;
+				$last_year = $year - 1;
+			}
+			else {
+				$last_month = $month - 1;
+				$last_year = $year;
+			}
+
+			$rollover_check = $this->db->get_where("budget_rollovers",["bud_month" => $last_month, "bud_year" => $last_year])->row();
+
+			$rollover_needed = true;
+
+			if ($rollover_check) {
+				if ($rollover_check->rolled_over)
+					$rollover_needed = false;
+			}
+
 			$return = [
 				'status' => 'success',
+				'rollover_needed' => $rollover_needed,
 				'income_sources' => $incomes,
 				'total_income' => $this_month_income->total_income,
 				'groups' => $ret_groups,
@@ -358,6 +377,18 @@ class Budget extends Base_Controller {
 			];
 		}
 		echo json_encode($return);
+	}
+
+	public function rollover() {
+		$post = $this->input->post();
+
+		$this->load->model("BudgetModel");
+
+		$this->BudgetModel->doRollover($post['year'],$post['month']);
+
+		echo json_encode([
+			'status' => 'success'
+		]);
 	}
 
 }
