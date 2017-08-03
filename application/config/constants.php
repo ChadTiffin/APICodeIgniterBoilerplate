@@ -1,9 +1,9 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-defined('APP_NAME') OR define('APP_NAME', "Tiffin Budget");
-defined('DOMAIN_NAME') OR define('DOMAIN_NAME', "api.budget.chadtiffin.com");
-defined('FRONT_END_DOMAIN') OR define('FRONT_END_DOMAIN', "budget.chadtiffin.com");
+defined('APP_NAME') OR define('APP_NAME', "");
+defined('DOMAIN_NAME') OR define('DOMAIN_NAME', "");
+defined('FRONT_END_DOMAIN') OR define('FRONT_END_DOMAIN', "");
 defined('PSW_MIN_LENGTH') OR define('PSW_MIN_LENGTH', 6);
 
 /*
