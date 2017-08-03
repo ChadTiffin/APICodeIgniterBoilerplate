@@ -22,7 +22,7 @@ class User extends Base_Controller {
 	{
 		parent::__construct();
 	
-		$this->gatekeep(["Admin","Root","User"]);
+		$this->gatekeep(["Demo","Admin","Root","User"]);
 	}
 
 	public function find($id,$field='id') {
@@ -54,6 +54,7 @@ class User extends Base_Controller {
 	}
 
 	public function new() {
+		$this->gatekeep(["Admin","Root"]);
 
 		$this->load->library("form_validation");
 		$this->form_validation->set_error_delimiters('', '');

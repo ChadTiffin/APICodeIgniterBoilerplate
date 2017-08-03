@@ -27,7 +27,7 @@ class Transaction extends Base_Controller {
 	{
 		parent::__construct();
 	
-		$this->gatekeep(["User","Admin","Root"]);
+		$this->gatekeep(["Demo", "User","Admin","Root"]);
 	}
 
 	public function filter(
