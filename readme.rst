@@ -2,7 +2,7 @@
 A CodeIgniter REST API Boilerplate
 ###################
 
-Contains prebuilt endpoints:
+# Prebuilt endpoints:
 
 GET {resource}/find/{id}
 
