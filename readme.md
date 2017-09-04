@@ -19,6 +19,7 @@ NOTE: Resource Controllers must have a matching model. More on Models later.
 
 Prebuilt endpoints:
 ===================
+The following endpoints will be automatically exposed by creating a controller that extends Base_Controller.
 
 * GET {resource}/find/{value}/{field?}
 * GET {resource}/get
@@ -89,3 +90,39 @@ POST {resource}/delete
 ----------------------
 Deletes a record. Pass an id in as a form-data field.
 
+Controller Configuration
+========================
+Defining the Model
+------------------
+In the controller, hook up the controllers model by setting a public property $model with a string of the model name.
+```
+<?php
+<?php
+class User extends Base_Controller {
+	public $model = "UsersModel";
+}
+
+```
+Excluding Fields
+----------------
+You can easily exclude database fields from being sent to the front end (like password hashes, ids, etc) by adding the field names to a public property called $api_excluded_fields
+```
+<?php
+class User extends Base_Controller {
+	public $api_excluded_fields = ["password","id"];
+}
+```
+Hiding Certain Auto-Exposed Endpoints
+-----------------------------------
+You can prevent some of the pre-build endpoints from being exposed to the front end by adding them to the $hidden_methods property array. For example if you did not want to allow a delete endpoint on the User resource, you would do the following:
+```
+<?php
+class User extends Base_Controller {
+	public $hidden_methods = ["delete"];
+}
+```
+
+Models
+======
+
+TO-DO
