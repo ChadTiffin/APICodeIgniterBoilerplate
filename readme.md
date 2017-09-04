@@ -121,6 +121,9 @@ class User extends Base_Controller {
 	public $hidden_methods = ["delete"];
 }
 ```
+Creating Your Own Additional Endpoints
+--------------------------------------
+Of course you can create additional endpoints easily by just adding your own methods to the Resource Controller, just like you would normally do in CodeIgniter.
 
 Models
 ======
