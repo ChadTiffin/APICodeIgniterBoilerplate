@@ -15,20 +15,14 @@ class User extends Base_Controller {
 			'rules' => "is_unique[users.email]"
 		]
 	];
-	public $api_excluded_fields = ["pw_hash","updated_at","deleted","allow_access"];
+	public $api_excluded_fields = ["pw_hash","updated_at","deleted"];
 	public $model = "UserModel";
 
 	public function __construct()
 	{
 		parent::__construct();
 	
-		$this->gatekeep(["Demo","Admin","Root","User"]);
-	}
-
-	public function find($id,$field='id') {
-		$this->gatekeep(["Admin","Root"]);
-
-		parent::find($id,$field);
+		//$this->gatekeep(["Demo","Admin","Root","User"]);
 	}
 
 	public function self($api_key) {
@@ -41,20 +35,7 @@ class User extends Base_Controller {
 		echo json_encode($result);
 	}
 
-	public function save() {
-		$this->gatekeep(["Admin","Root"]);
-
-		parent::save();
-	}
-
-	public function get() {
-		$this->gatekeep(["Admin","Root"]);
-
-		parent::get();
-	}
-
 	public function new() {
-		$this->gatekeep(["Admin","Root"]);
 
 		$this->load->library("form_validation");
 		$this->form_validation->set_error_delimiters('', '');
