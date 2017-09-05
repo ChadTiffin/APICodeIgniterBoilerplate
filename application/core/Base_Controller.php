@@ -2,12 +2,12 @@
 
 class Base_Controller extends CI_Controller {
 
+	public $allowed_origin = ""; //SET HERE. full url address of client ex. https://chadtiffin.com
+
 	public $table = ""; //set in child controllers
 	public $model = ""; //set in child controllers
 
 	public $api_excluded_fields = []; //set in child controllers. Will prevent listed fields from being sent to front-end ex. ["password","id"]
-
-	public $allowed_origin = ""; //full url address of client ex. https://chadtiffin.com
 
 	//methods listed here (in the child property) will be not availble to the front end (for example list delete here if you want to prevent the delete endpoint from being accessible)
 	public $hidden_methods =[];
@@ -15,9 +15,10 @@ class Base_Controller extends CI_Controller {
 	function __construct() {
 		parent::__construct();
 
-		if ($this->model != "") {
+		if ($this->model != "") 
 			$this->load->model($this->model);
-		}
+
+		$this->load->library("Response");
 
 		if (isset($_SERVER['HTTP_ORIGIN']))
 			header('Access-Control-Allow-Origin: '.$_SERVER['HTTP_ORIGIN']);
@@ -66,13 +67,27 @@ class Base_Controller extends CI_Controller {
 					}						
 				}
 			}
+
+			//check for allowed routes that may over-ride restricted routes
+			$allowed_routes = json_decode($user['allowed_routes']);
+			if (in_array($request_path, $allowed_routes)) { //check for exact route
+				$access_allowed = true;
+			} 
+			else {
+				//check for parent route restriction
+				foreach ($allowed_routes as $route) {
+
+					if (strpos($request_path, $route) !== false)  //there is a parent route that matches this path that is allowed
+						$access_allowed = true; 
+										
+				}
+			}
+
 		}
 		else {
 			$access_allowed = false;
 			$message = "API key invalid";
 		}
-
-		$this->load->library("Response");
 
 		if (!$access_allowed) {
 			$this->response->json([],[

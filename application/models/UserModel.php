@@ -4,30 +4,30 @@ class UserModel extends BaseModel {
 
 	public $table = "users";
 	public $soft_delete = true;
-
-	private $auth_level_mapping = [
-		"User",
-		"Admin",
-		"Root"
+	public $validation_rules = [
+		[
+			'field' => "email",
+			'label' => "Email",
+			'rules' => "required|valid_email"
+		],
+		[
+			'field' => 'username',
+			'label' => "Username",
+			'rules' => "is_unique[users.email]"
+		]
 	];
 
-	public function sessionDestroy()
+	public function getUserFromApiKey($key)
 	{
-		unset($_SESSION['user_id']);
-		unset($_SESSION['first_name']);
-		unset($_SESSION['auth_level_name']);
-		unset($_SESSION['user_email']);
-		unset($_SESSION['last_login']);
-		session_destroy();
-	}
+		$user = $this->db
+			->select("*")
+			->from("users")
+			->join("api_keys","user_id=users.id")
+			->where("api_key",$key)
+			->get()
+			->row_array();
 
-	public function setSession($user_details)
-	{
-		$_SESSION['user_id'] = $user_details->id;
-		$_SESSION['first_name'] = $user_details->first_name;
-		$_SESSION['auth_level_name'] = $user_details->user_level;
-		$_SESSION['last_login'] = $user_details->last_login;
-		$_SESSION['user_email'] = $user_details->email;
+		return $user;
 	}
 
 	//check user's password is valid
@@ -40,37 +40,12 @@ class UserModel extends BaseModel {
 			->row();
 
 		if ($user) {
-			if (password_verify($password, $user->pw_hash)) {
+			if (password_verify($password, $user->pw_hash)) 
 				return $user;
-			}
-			else {
-				return false;
-			}
 		}
-		else {
-			return false;
-		}
-		
-	}
 
-	//accepts an array of user_levels that can get past this gate
-	public function accessAllowed(array $req_account_level)
-	{
+		return false;
 		
-		//check for API key
-		if (isset($_REQUEST['key']))
-			$user = $this->db->get_where("users",["api_key" => $_REQUEST['key']])->row();
-		else
-			$user = false;
-
-		if (!$user) 
-			return false;
-		else {
-			if (in_array($user->user_level, $req_account_level)) 
-				return true;
-			else
-				return false;
-		}
 	}
 
 	public function createPasswordHash($plaintext)

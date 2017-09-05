@@ -2,86 +2,66 @@
 
 class Auth extends Base_Controller {
 
-	public $user_model = "UserModel";
+	public $model = "UserModel";
 	public $password_min_length = PSW_MIN_LENGTH;
 
-	public function __construct()
-	{
-		parent::__construct();
-	
-		$this->load->model($this->user_model);
-	}
-
+	public $hidden_methods = ["save",'save_batch','delete','find','get'];
 
 	public function login()
 	{
+		$model = $this->model
 		$username = $this->input->post("email");
 		$password = $this->input->post("password");
 
-		$usermodel = $this->user_model;
-		$user_details = $this->$usermodel->authenticate($username, $password);
+		$model = $this->user_model;
+		$user_details = $this->$model->authenticate($username, $password);
 
 		if ($user_details && $password != "") {
 			//USER IS AUTHENTICATED
 
-			//check they're not suspended
-			if ($user_details->user_level == "Suspended") {
-				$response = [
-					'status' => 'failed',
-					'msg' => "Your account has been suspended by an Administrator"
-				];
-			}
-			else {
+			//update last login
+			$this->$model->save([
+				"id" => $user_details->id,
+				"last_login" => date("Y-m-d H:i:s")
+			]);
 
-				$this->$usermodel->setSession($user_details);
-
-				//create new API key
-				//$key = hash("sha256", mt_rand(10000,1000000000).time().$user_details->id);
-
-				//update last login
-				$q = "UPDATE ".$this->$usermodel->table." SET last_login=NOW() WHERE id=?";
-				$r = $this->db->query($q, array($user_details->id));
-
-				$response = [
-					'status' => "success",
-					'userType' => $user_details->user_level,
-					"apiKey" => $user_details->api_key,
-					'msg' => "Login successful."
-				];
-			}
+			$response = [
+				'status' => "success",
+				"apiKey" => $user_details->api_key,
+				'message' => "Login successful."
+			];
+			
 		}
 		else {
 			$response = [
 				'status' => "denied",
-				'msg' => "Login attempt failed."
+				'message' => "Login attempt failed."
 			];
 		}
 
-		echo json_encode($response);
+		$this->response->json([],$response);
 	}
 
 	public function logout() {
-		$usermodel = $this->user_model;
+		$model = $this->user_model;
 
-		$this->$usermodel->sessionDestroy();
-
-		echo json_encode([
+		$this->response->json([],[
 			"status" => "success",
-			"msg" => "You have been logged out"
+			"message" => "You have been logged out"
 		]);
 	}
 
 	public function new_api_key() {
-		$this->gatekeep(["Admin","Root"]);
 
 		$user_id = $this->input->post("user_id");
 		$key = hash("sha256", mt_rand(10000,1000000000).time().$user_id);
 
-		$this->db->where("id",$user_id)
-			->set("api_key",$key)
-			->update("users");
+		$this->db->insert('api_keys',[
+			'user_id' => $user_id,
+			"api_key" => $key
+		]);
 
-		echo json_encode([
+		$this->response->json([],[
 			"status" => "success",
 			"newKey" => $key
 		]);
@@ -89,7 +69,7 @@ class Auth extends Base_Controller {
 
 	public function password($request)
 	{
-		$usermodel = $this->user_model;
+		$model = $this->user_model;
 
 		if ($request == "reset") {
 
@@ -105,13 +85,13 @@ class Auth extends Base_Controller {
 
 				$response = [
 					'status' => "failed",
-					'msg' => validation_errors()
+					'message' => validation_errors()
 				];
 			}
 			elseif ($post['confirm'] != $post['password']) {
 				$response = [
 					'status' => "failed",
-					'msg' => "Your password doesn't match the confirmation field"
+					'message' => "Your password doesn't match the confirmation field"
 				];
 			}
 			else {
@@ -130,7 +110,7 @@ class Auth extends Base_Controller {
 				if ($booTokenValid) {
 					//check length
 
-					$result = $this->$usermodel->changePassword($user_details->id,$post['confirm']);
+					$result = $this->$model->changePassword($user_details->id,$post['confirm']);
 
 					//delete token
 					$r = $this->db->where('id',$token_record->id)
@@ -138,13 +118,13 @@ class Auth extends Base_Controller {
 
 					$response = [
 						'status' => "success",
-						'msg' => "Password changed successfully."
+						'message' => "Password changed successfully."
 					];
 				}
 				else {
 					$response = [
 						'status' => "failed",
-						'msg' => 'Invalid token. Please go initiate another password reset request.'
+						'message' => 'Invalid token. Please go initiate another password reset request.'
 					];
 				}
 			}
@@ -154,10 +134,10 @@ class Auth extends Base_Controller {
 			$post = $this->input->post();
 
 			//find user by email
-			$user = $this->db->get_where($this->$usermodel->table, ['email' => $post['email']])->row();
+			$user = $this->db->get_where($this->$model->table, ['email' => $post['email']])->row();
 
 			if ($user) {
-				$token = $this->$usermodel->generateUserToken($user->id,1);
+				$token = $this->$model->generateUserToken($user->id,1);
 
 				$data = [
 					'token' => $token['token'],
@@ -169,45 +149,50 @@ class Auth extends Base_Controller {
 				//insert into pw_reset_table
 				$r = $this->db->insert('user_tokens',$data);
 
-				$this->$usermodel->sendEmail($user->email, 'emails/password_reset', $data, "Password Reset Request for ".APP_NAME);
+				$this->$model->sendEmail($user->email, 'emails/password_reset', $data, "Password Reset Request for ".APP_NAME);
 
 			}
 			$response = [
 				'status' => "success",
-				"msg" => "If we have your email on file we have sent you password instructions, which you should receive within 15 minutes."
+				"message" => "If we have your email on file we have sent you password instructions, which you should receive within 15 minutes."
 			];
 		}
 		elseif ($request == 'change') {
-			$this->gatekeep(["User","Admin","Root"]);
 
 			$post = $this->input->post();
 
 			if ($post['new-password'] != $post['confirm-password']) {
 				$response = [
 					'status' => "failed",
-					'msg' => "Passwords don't match."
+					'message' => "Passwords don't match."
 				];
 			}
 			elseif (strlen($post['new-password']) < PSW_MIN_LENGTH) {
 				$response = [
 					'status' => "failed",
-					'msg' => "Password has to be at least ".PSW_MIN_LENGTH." characters long."
+					'message' => "Password has to be at least ".PSW_MIN_LENGTH." characters long."
 				];
 			}
 			else {
 				//validate old password
-				if ($this->$usermodel->authenticate($_SESSION['user_email'],$post['password'])) {
-					$result = $this->$usermodel->changePassword($_SESSION['user_id'],$post['new-password']);
+				$request_headers = $this->input->request_headers();
+
+				$api_key = $request_headers['Authorization'];
+
+				$user = $this->$model->getUserFromApiKey($api_key);
+
+				if ($this->$model->authenticate($user['email'],$post['password'])) {
+					$result = $this->$model->changePassword($user['id'],$post['new-password']);
 
 					$response = [
 						'status' => "success",
-						'msg' => "Password changed successfully."
+						'message' => "Password changed successfully."
 					];
 				}
 				else {
 					$response = [
 						'status' => "failed",
-						'msg' => 'Password incorrect.'
+						'message' => 'Password incorrect.'
 					];
 				}
 			}

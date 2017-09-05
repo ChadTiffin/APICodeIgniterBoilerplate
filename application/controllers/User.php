@@ -3,20 +3,10 @@
 class User extends Base_Controller {
 
 	public $table = "users";
-	public $validation_rules = [
-		[
-			'field' => "email",
-			'label' => "Email",
-			'rules' => "required|valid_email"
-		],
-		[
-			'field' => 'username',
-			'label' => "Username",
-			'rules' => "is_unique[users.email]"
-		]
-	];
-	public $api_excluded_fields = ["pw_hash","updated_at","deleted"];
 	public $model = "UserModel";
+	
+	public $api_excluded_fields = ["pw_hash","updated_at","deleted"];
+	
 
 	public function __construct()
 	{

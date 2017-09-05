@@ -6,6 +6,7 @@ class BaseModel extends CI_Model {
 	public $soft_delete = false;
 	public $order_by_priority = false;
 	public $page_limit = 50; //optionally over-ride in child model
+	public $validation_rules = [];
 
 	/* $relations expects = [
 			[
