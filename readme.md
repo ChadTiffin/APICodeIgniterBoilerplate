@@ -125,7 +125,148 @@ Creating Your Own Additional Endpoints
 --------------------------------------
 Of course you can create additional endpoints easily by just adding your own methods to the Resource Controller, just like you would normally do in CodeIgniter.
 
-Models
-======
+Authorization & Permissions
+===========================
+TO-DO: Documentation
 
-TO-DO
+Models & ORM
+===========
+
+Every resource controller requires a Model class, extended from BaseModel. Extending your models from BaseModel also gives you access to a basic ORM. Database tables belonging to a model should typically include a column called update_at, in DateTime format.
+
+Models MUST have a $table public property declared.
+
+Example Model:
+```
+<?php
+class ClientModel extends BaseModel {
+
+	public $table = "clients";
+
+	public $soft_delete = true;
+
+	public $relations = [
+		['table' => 'locations', 'key' => 'client_id', 'hasMany'=>true]
+	];
+}
+```
+Soft Deletes
+------------
+You can enable soft deletes by simple including a Boolean "deleted" column on your table, and setting the $soft_delete property to true in the model.
+
+Validation Rules
+----------------
+To set CodeIgniter supported validation rules on the model, set the $validation_rules property to an array using the CodeIgniter Form Validation conventions.
+
+Declaring Database Relations
+----------------------------
+The $relations public property allows us to define other tables related to a model. It accepts an array of arrays like so:
+```
+public $relations = [
+	[
+		'table' => {table},
+		'key' => {table_key ex user_id},
+		'joins' => [
+			['table' => {table}, 'key' => {key}].
+		'hasMany' => true (optional, if not set, single child record assumed)
+	]
+]
+```
+For example:
+```
+<?php
+class Authors extends BaseModel {
+	public $table = "authors";
+	
+	public $relations = [
+		'table' => 'books',
+		'key' => 'author_id',
+		'hasMany' => true
+	];
+}
+```
+Would cause a get() on the Author model to return child records from table "books" into the "books" property like this:
+```
+{
+	"id": 1,
+	"name": "C.S. Lewis",
+	"year_born": 1898,
+	"year_died": 1963,
+	"books": [
+		{
+			"id": 3,
+			"title": "Prince Caspian"
+		},
+		{
+			"id": 45,
+			"title": "Voyage of the Dawn Treader"
+		}
+	]
+}
+```
+Omitting the 'hasMany' property in the relation declaration would return only the first record into the "books" property as an object, rather than an array:
+
+```
+{
+	"id": 1,
+	"name": "C.S. Lewis",
+	"year_born": 1898,
+	"year_died": 1963,
+	"books": {
+		"id": 3,
+		"title": "Prince Caspian"
+	},
+}
+```
+You can also join tables inside child records as well:
+```
+public $relations = [
+	'table' => 'books',
+	'key' => 'author_id',
+	'hasMany' => true,
+	'joins' = [
+		['table' => 'editors','key' => 'editor_id']
+	]
+];
+```
+This would perform a left join onto the books table with the addresses table on editor_id, producing:
+```
+SELECT * FROM books 
+LEFT JOIN editors ON books.editor_id=editors.id
+```
+This would of course be then nested into the "books" property of the authors record.
+
+Available Model Methods
+-----------------------
+Models contain methods get(), save(), saveBatch(), delete(), and find(), which is what powers the Resource Controller methods of the same names.
+
+### get(array $options)
+Takes an $options parameter:
+```
+$options = [
+	'include_deleted' => false (default),
+	'filters' => [
+		[field, matched value, operator (optional), like (optional)]
+	],
+	'order' => [column, ASC/DESC],
+	'page' => integer (optional),
+	'include_relations' => true
+];
+```
+
+### save(array $data) 
+Takes $data parameter, container an array of fields to save. If validation rules are set on model, validation of $data is performed. Returns $id of record on success, or array of form_errors on validation failure.
+
+### saveBatch(array $records)
+Saves a set of records. If validation rules are set on model, validation is performed. Returns count of records saved.
+
+### find(string $field,string/integer $value,boolean $include_children = true)
+Returns single record.
+Takes $field, $value, $include_children (optional, default true) parameters:
+$field (string): Column to match
+$value: Value to match with column.
+$include_children (boolean, optional, default true): Whether or not to return any child relations as nested properties.
+
+### delete(integer $id)
+Deletes (or soft deletes if soft delete model is enabled on model) a record.
+
